@@ -4,6 +4,7 @@
 	import { ungh } from '$lib/utils';
 	import type { Repo } from '$lib/schemas/repo';
 	import { starredRepos } from '$lib/global.svelte';
+	import { slide } from 'svelte/transition';
 
 	type ReleaseWithMeta = Release & { meta: Repo };
 
