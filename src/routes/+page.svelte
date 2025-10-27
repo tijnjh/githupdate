@@ -2,53 +2,53 @@
 	import ReleaseCard from '$lib/components/ReleaseCard.svelte';
 	import { Release } from '$lib/schemas/release';
 	import { ungh } from '$lib/utils';
-	import { getUnixTime } from 'date-fns';
-	import { resource } from 'runed';
-	import AsyncView from '$lib/components/AsyncView.svelte';
 	import type { Repo } from '$lib/schemas/repo';
 	import { starredRepos } from '$lib/global.svelte';
 
-	const promises: Promise<Release & { meta: Repo }>[] = [];
+	type ReleaseWithMeta = Release & { meta: Repo };
+
+	let releases: ReleaseWithMeta[] = $state([]);
+
+	const promises: Promise<ReleaseWithMeta>[] = [];
 
 	for (const repo of starredRepos.current) {
 		promises.push(
 			ungh<{ release: Release }>(`/repos/${repo.owner}/${repo.name}/releases/latest`, {
 				reject: () => false,
-				onError: () => {}
+				onError: () => {},
+				retry: { attempts: 5 }
 			})
 				.then((r) => r.release)
 				.then((r) => ({ ...r, meta: repo }))
+				.then((release) => {
+					releases.push(release);
+					return release;
+				})
 		);
 	}
 
-	const query = resource(
-		() => starredRepos.current,
-		async () => {
-			try {
-				const results = await Promise.allSettled(promises);
+	Promise.allSettled(promises);
 
-				const fulfilled = results
-					.filter(
-						(r): r is PromiseFulfilledResult<Release & { meta: Repo }> => r.status === 'fulfilled'
-					)
-					.map((r) => r.value)
-					.flat();
-
-				return fulfilled.sort((a, b) => getUnixTime(b.createdAt) - getUnixTime(a.createdAt));
-			} catch (error) {
-				console.error('Unexpected error in query:', error);
-				return [];
-			}
-		}
+	const sortedReleases = $derived(
+		releases.toSorted((a, b) => {
+			const dateA = new Date(a.publishedAt);
+			const dateB = new Date(b.publishedAt);
+			return dateB.getTime() - dateA.getTime();
+		})
 	);
 </script>
 
-<AsyncView {query}>
-	{#snippet success(releases)}
-		{#each releases as { meta, ...release } (release.id ?? Math.random())}
-			{#if release.id}
-				<ReleaseCard release={$state.snapshot(release)} {meta} />
-			{/if}
-		{/each}
-	{/snippet}
-</AsyncView>
+{#if starredRepos.current.length !== sortedReleases.length}
+	<progress
+		transition:slide
+		class="relative my-8 h-2 w-full overflow-hidden rounded-full bg-primary/20"
+		max={starredRepos.current.length}
+		value={sortedReleases.length}
+	></progress>
+{/if}
+
+{#each sortedReleases as { meta, ...release } (meta.owner + meta.name)}
+	{#if release.id}
+		<ReleaseCard release={$state.snapshot(release)} {meta} />
+	{/if}
+{/each}

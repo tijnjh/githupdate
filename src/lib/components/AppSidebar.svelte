@@ -6,7 +6,9 @@
 	import { useDebounce } from 'runed';
 	import * as v from 'valibot';
 	import { upfetch } from '$lib/utils';
-	import * as Avatar from '$lib/components/ui/avatar/index.js';
+	import Spinner from './ui/spinner/spinner.svelte';
+
+	let isLoading = $state(false);
 
 	const updateStarredRepos = useDebounce(async (user: string) => {
 		currentUser.current = user;
@@ -26,6 +28,8 @@
 				)
 			});
 
+			isLoading = true;
+
 			allRepos.push(
 				...repos.map((repo) => ({
 					name: repo.name,
@@ -39,6 +43,7 @@
 		}
 
 		starredRepos.current = allRepos;
+		isLoading = false;
 	}, 1000);
 </script>
 
@@ -47,7 +52,7 @@
 		<Sidebar.Header>
 			<Input
 				oninput={(e) => updateStarredRepos(e.currentTarget?.value)}
-				placeholder="Enter your github username"
+				placeholder="Enter your github handle"
 				value={currentUser.current}
 			/>
 		</Sidebar.Header>
@@ -64,25 +69,25 @@
 		</Sidebar.Group>
 
 		<Sidebar.Group>
-			<Sidebar.GroupLabel>Following ({starredRepos.current.length})</Sidebar.GroupLabel>
+			<Sidebar.GroupLabel>Starred ({starredRepos.current.length})</Sidebar.GroupLabel>
 			<Sidebar.GroupContent>
-				<Sidebar.Menu>
-					{#each starredRepos.current as { owner, name } (`${owner}/${name}`)}
-						<Sidebar.MenuItem>
-							<Sidebar.MenuButton>
-								{#snippet child({ props })}
-									<a href={resolve('/[owner]/[name]', { owner, name })} {...props}>
-										<Avatar.Root>
-											<Avatar.Image src={`https://github.com/${owner}.png`} alt="@{owner}" />
-											<Avatar.Fallback>{owner[0].toUpperCase()}</Avatar.Fallback>
-										</Avatar.Root>
-										<span>{owner}/{name}</span>
-									</a>
-								{/snippet}
-							</Sidebar.MenuButton>
-						</Sidebar.MenuItem>
-					{/each}
-				</Sidebar.Menu>
+				{#if isLoading}
+					<Spinner class="mx-auto my-4" />
+				{:else}
+					<Sidebar.Menu>
+						{#each starredRepos.current as { owner, name } (`${owner}/${name}`)}
+							<Sidebar.MenuItem>
+								<Sidebar.MenuButton>
+									{#snippet child({ props })}
+										<a href={resolve('/[owner]/[name]', { owner, name })} {...props}>
+											<span>{owner}/{name}</span>
+										</a>
+									{/snippet}
+								</Sidebar.MenuButton>
+							</Sidebar.MenuItem>
+						{/each}
+					</Sidebar.Menu>
+				{/if}
 			</Sidebar.GroupContent>
 		</Sidebar.Group>
 	</Sidebar.Content>
