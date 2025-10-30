@@ -8,6 +8,7 @@
 	import { parseTag } from '$lib/utils';
 	import { ChevronRightIcon, GithubIcon } from 'lucide-svelte';
 	import Button from './ui/button/button.svelte';
+	import { page } from '$app/state';
 
 	const { release, meta }: { release: Release; meta: Repo } = $props();
 
@@ -73,7 +74,9 @@
 				<GithubIcon />
 			</Button>
 
-			<Button href="/{meta.owner}/{meta.name}" variant="secondary">All releases</Button>
+			{#if page.route.id === '/'}
+				<Button href="/{meta.owner}/{meta.name}" variant="secondary">All releases</Button>
+			{/if}
 		</div>
 	</Accordion.Content>
 </Accordion.Item>
