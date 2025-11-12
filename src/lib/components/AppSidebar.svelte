@@ -1,16 +1,28 @@
 <script lang="ts">
-	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
-	import { resolve } from '$app/paths';
-	import Input from './ui/input/input.svelte';
-	import { starredRepos, user as currentUser } from '$lib/global.svelte';
-	import { useDebounce } from 'runed';
-	import * as v from 'valibot';
 	import { upfetch } from '$lib/utils';
-	import Spinner from './ui/spinner/spinner.svelte';
+	import {
+		Input,
+		Sidebar,
+		SidebarGroup,
+		SidebarItem,
+		Spinner,
+		type SidebarProps
+	} from 'flowbite-svelte';
+	import { useDebounce } from 'runed';
+	import { starredRepos, user as currentUser } from '$lib/global.svelte';
+	import * as v from 'valibot';
+	import { resolve } from '$app/paths';
+	import { HomeSolid } from 'flowbite-svelte-icons';
+	import { page } from '$app/state';
+
+	const props: Omit<SidebarProps, 'children'> = $props();
 
 	let isLoading = $state(false);
+	const activeUrl = $derived(page.url.pathname);
 
-	const updateStarredRepos = useDebounce(async (user: string) => {
+	let user = $state(currentUser.current);
+
+	const updateStarredRepos = useDebounce(async (user?: string) => {
 		currentUser.current = user;
 
 		const allRepos: { name: string; owner: string }[] = [];
@@ -47,48 +59,42 @@
 	}, 1000);
 </script>
 
-<Sidebar.Root>
-	<Sidebar.Content>
-		<Sidebar.Header>
-			<Input
-				oninput={(e) => updateStarredRepos(e.currentTarget?.value)}
-				placeholder="Enter your github handle"
-				value={currentUser.current}
-			/>
-		</Sidebar.Header>
-		<Sidebar.Group>
-			<Sidebar.GroupContent>
-				<Sidebar.Menu>
-					<Sidebar.MenuButton>
-						{#snippet child({ props })}
-							<a href={resolve('/')} {...props}>Timeline</a>
-						{/snippet}
-					</Sidebar.MenuButton>
-				</Sidebar.Menu>
-			</Sidebar.GroupContent>
-		</Sidebar.Group>
-
-		<Sidebar.Group>
-			<Sidebar.GroupLabel>Starred ({starredRepos.current.length})</Sidebar.GroupLabel>
-			<Sidebar.GroupContent>
-				{#if isLoading}
-					<Spinner class="mx-auto my-4" />
-				{:else}
-					<Sidebar.Menu>
-						{#each starredRepos.current as { owner, name } (`${owner}/${name}`)}
-							<Sidebar.MenuItem>
-								<Sidebar.MenuButton>
-									{#snippet child({ props })}
-										<a href={resolve('/[owner]/[name]', { owner, name })} {...props}>
-											<span>{owner}/{name}</span>
-										</a>
-									{/snippet}
-								</Sidebar.MenuButton>
-							</Sidebar.MenuItem>
-						{/each}
-					</Sidebar.Menu>
-				{/if}
-			</Sidebar.GroupContent>
-		</Sidebar.Group>
-	</Sidebar.Content>
-</Sidebar.Root>
+<Sidebar
+	{...props}
+	{activeUrl}
+	backdrop={false}
+	params={{ x: -50, duration: 50 }}
+	class="z-50 flex flex-col gap-4"
+	position="absolute"
+	classes={{
+		nonactive: 'p-2',
+		active: 'p-2'
+	}}
+>
+	<SidebarGroup class="mb-4">
+		<SidebarItem label="Home" href="/">
+			{#snippet icon()}
+				<HomeSolid
+					class="h-5 w-5 text-gray-500 transition duration-75 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white"
+				/>
+			{/snippet}
+		</SidebarItem>
+	</SidebarGroup>
+	<Input
+		bind:value={user}
+		oninput={() => updateStarredRepos(user)}
+		placeholder="Enter your github handle"
+	/>
+	<SidebarGroup class="overflow-y-scroll">
+		{#if isLoading}
+			<Spinner class="mx-auto my-4" />
+		{:else}
+			{#each starredRepos.current as { owner, name } (`${owner}/${name}`)}
+				<SidebarItem
+					label={`${owner}/${name}`}
+					href={resolve('/[owner]/[name]', { owner, name })}
+				/>
+			{/each}
+		{/if}
+	</SidebarGroup>
+</Sidebar>

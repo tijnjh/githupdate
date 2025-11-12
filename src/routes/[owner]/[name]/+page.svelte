@@ -6,6 +6,7 @@
 	import { resource } from 'runed';
 	import ReleaseCard from '$lib/components/ReleaseCard.svelte';
 	import AsyncView from '$lib/components/AsyncView.svelte';
+	import { Accordion } from 'flowbite-svelte';
 
 	const query = resource(
 		() => page.params,
@@ -20,14 +21,16 @@
 
 <AsyncView {query}>
 	{#snippet success(releases)}
-		{#each releases as release (release.id)}
-			<ReleaseCard
-				{release}
-				meta={{
-					name: page.params.name!,
-					owner: page.params.owner!
-				}}
-			/>
-		{/each}
+		<Accordion>
+			{#each releases as release (release.id)}
+				<ReleaseCard
+					{release}
+					meta={{
+						name: page.params.name!,
+						owner: page.params.owner!
+					}}
+				/>
+			{/each}
+		</Accordion>
 	{/snippet}
 </AsyncView>

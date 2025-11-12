@@ -4,7 +4,7 @@
 	import { ungh } from '$lib/utils';
 	import type { Repo } from '$lib/schemas/repo';
 	import { starredRepos } from '$lib/global.svelte';
-	import { slide } from 'svelte/transition';
+	import { Accordion, Progressbar } from 'flowbite-svelte';
 
 	type ReleaseWithMeta = Release & { meta: Repo };
 
@@ -40,16 +40,13 @@
 </script>
 
 {#if starredRepos.current.length !== sortedReleases.length}
-	<progress
-		transition:slide
-		class="relative my-8 h-2 w-full overflow-hidden rounded-full bg-primary/20"
-		max={starredRepos.current.length}
-		value={sortedReleases.length}
-	></progress>
+	<Progressbar progress={(sortedReleases.length / starredRepos.current.length) * 100}></Progressbar>
 {/if}
 
-{#each sortedReleases as { meta, ...release } (meta.owner + meta.name)}
-	{#if release.id}
-		<ReleaseCard release={$state.snapshot(release)} {meta} />
-	{/if}
-{/each}
+<Accordion>
+	{#each sortedReleases as { meta, ...release } (meta.owner + meta.name)}
+		{#if release.id}
+			<ReleaseCard release={$state.snapshot(release)} {meta} />
+		{/if}
+	{/each}
+</Accordion>
