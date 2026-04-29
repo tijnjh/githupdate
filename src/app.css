@@ -1,5 +1,4 @@
 @import 'tailwindcss';
-@import '../node_modules/flowbite-svelte/dist/theme-selector/themes/default.css';
 
 @plugin '@tailwindcss/typography';
 
