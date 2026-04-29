@@ -22,16 +22,18 @@
 
 	let user = $state(currentUser.current);
 
+	let fetchingPageNr = $state<number>();
+
 	const updateStarredRepos = useDebounce(async (user?: string) => {
 		currentUser.current = user;
 
 		const allRepos: { name: string; owner: string }[] = [];
-		let page = 1;
+		fetchingPageNr = 1;
 		const perPage = 100;
 
 		while (true) {
 			const repos = await upfetch(`https://api.github.com/users/${user}/starred`, {
-				params: { per_page: perPage, page },
+				params: { per_page: perPage, page: fetchingPageNr },
 				schema: v.array(
 					v.object({
 						name: v.string(),
@@ -51,24 +53,33 @@
 
 			if (repos.length < perPage) break;
 
-			page++;
+			fetchingPageNr++;
 		}
 
 		starredRepos.current = allRepos;
 		isLoading = false;
 	}, 1000);
+
+	let searchQuery = $state<string>();
+
+	const filteredRepos = $derived.by(() => {
+		if (!searchQuery) return starredRepos.current;
+
+		return starredRepos.current.filter((repo) =>
+			`${repo.owner}/${repo.name}`.toLowerCase().includes(searchQuery!.toLowerCase())
+		);
+	});
 </script>
 
 <Sidebar
 	{...props}
 	{activeUrl}
 	backdrop={false}
-	params={{ x: -50, duration: 50 }}
-	class="z-50 flex flex-col gap-4"
 	position="absolute"
 	classes={{
 		nonactive: 'p-2',
-		active: 'p-2'
+		active: 'p-2',
+		content: 'max-h-dvh overflow-y-auto'
 	}}
 >
 	<SidebarGroup class="mb-4">
@@ -84,12 +95,20 @@
 		bind:value={user}
 		oninput={() => updateStarredRepos(user)}
 		placeholder="Enter your github handle"
+		class="mb-2"
 	/>
-	<SidebarGroup class="overflow-y-scroll">
+	<Input
+		bind:value={searchQuery}
+		oninput={() => updateStarredRepos(user)}
+		placeholder="Filter starred repos"
+		class="mb-2"
+	/>
+	<SidebarGroup class="overflow-y-auto">
 		{#if isLoading}
 			<Spinner class="mx-auto my-4" />
+			{fetchingPageNr ? fetchingPageNr * 100 : 0}
 		{:else}
-			{#each starredRepos.current as { owner, name } (`${owner}/${name}`)}
+			{#each filteredRepos as { owner, name } (`${owner}/${name}`)}
 				<SidebarItem
 					label={`${owner}/${name}`}
 					href={resolve('/[owner]/[name]', { owner, name })}

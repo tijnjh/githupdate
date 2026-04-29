@@ -4,7 +4,7 @@
 	import { ungh } from '$lib/utils';
 	import type { Repo } from '$lib/schemas/repo';
 	import { starredRepos } from '$lib/global.svelte';
-	import { Accordion, Progressbar } from 'flowbite-svelte';
+	import { Progressbar } from 'flowbite-svelte';
 
 	type ReleaseWithMeta = Release & { meta: Repo };
 
@@ -43,10 +43,10 @@
 	<Progressbar progress={(sortedReleases.length / starredRepos.current.length) * 100}></Progressbar>
 {/if}
 
-<Accordion>
+<div class="flex flex-col gap-4">
 	{#each sortedReleases as { meta, ...release } (meta.owner + meta.name)}
 		{#if release.id}
 			<ReleaseCard release={$state.snapshot(release)} {meta} />
 		{/if}
 	{/each}
-</Accordion>
+</div>

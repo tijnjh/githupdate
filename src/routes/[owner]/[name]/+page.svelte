@@ -6,7 +6,6 @@
 	import { resource } from 'runed';
 	import ReleaseCard from '$lib/components/ReleaseCard.svelte';
 	import AsyncView from '$lib/components/AsyncView.svelte';
-	import { Accordion } from 'flowbite-svelte';
 
 	const query = resource(
 		() => page.params,
@@ -21,7 +20,7 @@
 
 <AsyncView {query}>
 	{#snippet success(releases)}
-		<Accordion>
+		<div class="flex flex-col gap-4">
 			{#each releases as release (release.id)}
 				<ReleaseCard
 					{release}
@@ -31,6 +30,6 @@
 					}}
 				/>
 			{/each}
-		</Accordion>
+		</div>
 	{/snippet}
 </AsyncView>

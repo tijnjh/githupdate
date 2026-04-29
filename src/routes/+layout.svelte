@@ -21,14 +21,16 @@
 <div class="relative">
 	<AppSidebar {closeSidebar} {isOpen} />
 
-	<div class="flex flex-col gap-4 overflow-y-scroll p-4 md:ml-64">
-		<div class="items center flex">
+	<div class="flex h-dvh flex-col md:ml-64">
+		<div class="flex items-center p-4">
 			<SidebarButton onclick={sidebarUi.toggle} class="mb-2" />
 			<Button onclick={toggleMode} class="mb-2 ml-auto">
 				<Icon />
 				<span class="sr-only">Toggle theme</span>
 			</Button>
 		</div>
-		{@render children?.()}
+		<div class="flex flex-col gap-4 overflow-y-auto p-4">
+			{@render children?.()}
+		</div>
 	</div>
 </div>

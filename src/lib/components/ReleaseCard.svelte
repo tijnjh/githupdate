@@ -5,7 +5,7 @@
 	import { marked } from 'marked';
 	import { parseTag } from '$lib/utils';
 	import { page } from '$app/state';
-	import { AccordionItem, Badge, Button } from 'flowbite-svelte';
+	import { Badge, Button, Card, Modal } from 'flowbite-svelte';
 	import { GithubSolid, AngleRightOutline } from 'flowbite-svelte-icons';
 
 	const { release, meta }: { release: Release; meta: Repo } = $props();
@@ -28,10 +28,12 @@
 			}
 		}
 	});
+
+	let isModalOpen = $state(false);
 </script>
 
-<AccordionItem>
-	{#snippet header()}
+{#snippet card(onclick?: VoidFunction)}
+	<Card class="max-w-none p-4" {onclick}>
 		<div class="flex flex-col items-start justify-start">
 			<div class="flex items-center gap-2">
 				{meta.owner}
@@ -47,7 +49,16 @@
 				{formatDistance(release.publishedAt, new Date(), { addSuffix: true })}
 			</div>
 		</div>
-	{/snippet}
+	</Card>
+{/snippet}
+
+{@render card(() => (isModalOpen = true))}
+
+<Modal bind:open={isModalOpen}>
+	<div class="mt-8">
+		{@render card()}
+	</div>
+
 	<div class="mb-6 flex items-center gap-2">
 		<Button
 			href="https://github.com/{meta.owner}/{meta.name}/releases/tag/{release.tag}"
@@ -64,4 +75,4 @@
 		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 		{@html release.markdown ? marked.parse(release.markdown) : release.html}
 	</div>
-</AccordionItem>
+</Modal>
