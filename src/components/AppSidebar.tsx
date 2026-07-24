@@ -3,7 +3,7 @@ import { ArrowClockwise20Regular, Dismiss24Regular, Home20Regular, Search20Regul
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate, useRouterState } from '@tanstack/react-router'
 import { useAtom, useSetAtom } from 'jotai'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { getErrorMessage } from '../lib/errors'
 import { starredReposQuery } from '../lib/queries'
 import { sidebarOpenAtom, starredReposAtom, userAtom } from '../state/atoms'
@@ -28,18 +28,14 @@ export function AppSidebar() {
     }
   }, [setRepositories, starredQuery.data])
 
-  const filteredRepositories = useMemo(() => {
-    const normalizedFilter = filter.trim().toLocaleLowerCase()
-    if (!normalizedFilter) {
-      return repositories
-    }
-
-    return repositories.filter(repo =>
-      `${repo.owner}/${repo.name}`
-        .toLocaleLowerCase()
-        .includes(normalizedFilter),
-    )
-  }, [filter, repositories])
+  const normalizedFilter = filter.trim().toLocaleLowerCase()
+  const filteredRepositories = normalizedFilter
+    ? repositories.filter(repo =>
+        `${repo.owner}/${repo.name}`
+          .toLocaleLowerCase()
+          .includes(normalizedFilter),
+      )
+    : repositories
 
   const closeSidebar = () => setSidebarOpen(false)
   const loadStarredRepositories = () => {

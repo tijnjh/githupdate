@@ -21,7 +21,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { formatDistanceToNow } from 'date-fns'
 import DOMPurify from 'dompurify'
 import { marked } from 'marked'
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { parseTag } from '../lib/tags'
 
 interface ReleaseCardProps {
@@ -54,10 +54,10 @@ export function ReleaseCard({ release, meta, showAllReleasesLink = false }: Rele
         ? 'informative'
         : 'subtle'
 
-  const releaseBody = useMemo(() => {
-    const html = release.markdown ? marked.parse(release.markdown, { async: false }) : release.html
-    return DOMPurify.sanitize(html)
-  }, [release.html, release.markdown])
+  const releaseHtml = release.markdown
+    ? marked.parse(release.markdown, { async: false })
+    : release.html
+  const releaseBody = DOMPurify.sanitize(releaseHtml)
 
   const githubUrl = `https://github.com/${encodeURIComponent(meta.owner)}/${encodeURIComponent(meta.name)}/releases/tag/${encodeURIComponent(release.tag)}`
   const releaseDetails = [

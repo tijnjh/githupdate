@@ -3,7 +3,6 @@ import { ArrowClockwise20Regular, Star24Regular } from '@fluentui/react-icons'
 import { useQueries, useQueryClient } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { useAtomValue } from 'jotai'
-import { useMemo } from 'react'
 import { ReleaseCard } from '../components/ReleaseCard'
 import { ErrorState } from '../components/States'
 import { latestReleaseQuery } from '../lib/queries'
@@ -20,20 +19,16 @@ function HomeRoute() {
     queries: repositories.map(repository => latestReleaseQuery(repository)),
   })
 
-  const releases = useMemo(
-    () =>
-      releaseQueries
-        .map((query, index) => {
-          const release = query.data
-          return release ? { release, meta: repositories[index] } : null
-        })
-        .filter(item => item !== null)
-        .sort(
-          (a, b) =>
-            new Date(b.release.publishedAt).getTime() - new Date(a.release.publishedAt).getTime(),
-        ),
-    [releaseQueries, repositories],
-  )
+  const releases = releaseQueries
+    .map((query, index) => {
+      const release = query.data
+      return release ? { release, meta: repositories[index] } : null
+    })
+    .filter(item => item !== null)
+    .sort(
+      (a, b) =>
+        new Date(b.release.publishedAt).getTime() - new Date(a.release.publishedAt).getTime(),
+    )
 
   const completedCount = releaseQueries.filter(query => !query.isPending).length
   const failedQuery = releaseQueries.find(query => query.isError)
