@@ -1,7 +1,7 @@
-import { Text, Title1 } from '@fluentui/react-components'
+import { Button, Text } from '@fluentui/react-components'
 import { ArrowLeft20Regular } from '@fluentui/react-icons'
 import { useSuspenseQuery } from '@tanstack/react-query'
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { ReleaseCard } from '../components/ReleaseCard'
 import { RouteError, RoutePending } from '../components/States'
 import { releasesQuery } from '../lib/queries'
@@ -17,21 +17,19 @@ export const Route = createFileRoute('/$owner/$name')({
 function RepositoryRoute() {
   const { owner, name } = Route.useParams()
   const { data: releases } = useSuspenseQuery(releasesQuery(owner, name))
+  const navigate = useNavigate()
 
   return (
     <div className="page-stack">
-      <Link to="/" className="back-link">
-        <ArrowLeft20Regular />
-        Releases
-      </Link>
-
-      <section className="repository-intro">
-        <Title1 as="h1">
-          {owner}
-          /
-          {name}
-        </Title1>
-      </section>
+      <div>
+        <Button
+          appearance="subtle"
+          icon={<ArrowLeft20Regular />}
+          onClick={() => void navigate({ to: '/' })}
+        >
+          Latest releases
+        </Button>
+      </div>
 
       {releases.length > 0
         ? (

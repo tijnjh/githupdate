@@ -1,7 +1,7 @@
-import { Avatar, Button, Caption1, Field, Input, MessageBar, MessageBarBody, Spinner, Text, Tooltip } from '@fluentui/react-components'
-import { ArrowClockwise20Regular, Dismiss24Regular, Home24Regular, Search20Regular, Star24Filled } from '@fluentui/react-icons'
+import { Avatar, Button, Field, Input, MessageBar, MessageBarBody, Nav, NavItem, NavSectionHeader, Spinner, Text, Tooltip } from '@fluentui/react-components'
+import { ArrowClockwise20Regular, Dismiss24Regular, Home20Regular, Search20Regular } from '@fluentui/react-icons'
 import { useQuery } from '@tanstack/react-query'
-import { Link } from '@tanstack/react-router'
+import { useNavigate, useRouterState } from '@tanstack/react-router'
 import { useAtom, useSetAtom } from 'jotai'
 import { useEffect, useMemo, useState } from 'react'
 import { getErrorMessage } from '../lib/errors'
@@ -14,6 +14,8 @@ export function AppSidebar() {
   const setSidebarOpen = useSetAtom(sidebarOpenAtom)
   const [filter, setFilter] = useState('')
   const normalizedUser = user.trim()
+  const navigate = useNavigate()
+  const pathname = useRouterState({ select: state => state.location.pathname })
 
   const starredQuery = useQuery({
     ...starredReposQuery(normalizedUser),
@@ -49,37 +51,33 @@ export function AppSidebar() {
 
   return (
     <div className="sidebar-content">
-      <div className="sidebar-brand">
-        <div className="brand-mark" aria-hidden="true">
-          <Star24Filled />
-        </div>
-        <div>
-          <Text size={500} weight="semibold">
-            Githupdate
-          </Text>
-        </div>
-        <Tooltip content="Close navigation" relationship="label">
-          <Button
-            className="sidebar-close"
-            appearance="subtle"
-            icon={<Dismiss24Regular />}
-            onClick={closeSidebar}
-          />
-        </Tooltip>
-      </div>
-
-      <nav className="primary-nav" aria-label="Primary navigation">
-        <Link
-          to="/"
-          activeOptions={{ exact: true }}
-          activeProps={{ className: 'nav-link nav-link-active' }}
-          inactiveProps={{ className: 'nav-link' }}
+      <Tooltip content="Close navigation" relationship="label">
+        <Button
+          className="sidebar-close"
+          appearance="subtle"
+          icon={<Dismiss24Regular />}
           onClick={closeSidebar}
+        />
+      </Tooltip>
+
+      <Nav
+        density="small"
+        selectedValue={pathname === '/' ? '/' : ''}
+        aria-label="Primary navigation"
+      >
+        <NavItem
+          href="/"
+          value="/"
+          icon={<Home20Regular />}
+          onClick={(event) => {
+            event.preventDefault()
+            closeSidebar()
+            void navigate({ to: '/' })
+          }}
         >
-          <Home24Regular />
-          <span>Latest releases</span>
-        </Link>
-      </nav>
+          Latest releases
+        </NavItem>
+      </Nav>
 
       <div className="sidebar-controls">
         <Field label="GitHub user">
@@ -147,23 +145,35 @@ export function AppSidebar() {
           )
         : null}
 
-      <div className="repository-heading">
-        <Caption1>Repositories</Caption1>
-      </div>
+      <Nav
+        className="repository-nav"
+        density="small"
+        selectedValue={pathname}
+        aria-label="Starred repositories"
+      >
+        <NavSectionHeader>Repositories</NavSectionHeader>
 
-      <nav className="repository-nav" aria-label="Starred repositories">
         {filteredRepositories.map(({ owner, name }) => (
-          <Link
+          <NavItem
             key={`${owner}/${name}`}
-            to="/$owner/$name"
-            params={{ owner, name }}
-            activeProps={{ className: 'repo-link repo-link-active' }}
-            inactiveProps={{ className: 'repo-link' }}
-            onClick={closeSidebar}
+            href={`/${encodeURIComponent(owner)}/${encodeURIComponent(name)}`}
+            value={`/${encodeURIComponent(owner)}/${encodeURIComponent(name)}`}
+            title={`${owner}/${name}`}
+            onClick={(event) => {
+              event.preventDefault()
+              closeSidebar()
+              void navigate({
+                to: '/$owner/$name',
+                params: { owner, name },
+              })
+            }}
           >
-            <span className="repo-owner">{owner}</span>
-            <span className="repo-name">{name}</span>
-          </Link>
+            <Text className="repository-name" size={200} truncate wrap={false}>
+              {owner}
+              /
+              {name}
+            </Text>
+          </NavItem>
         ))}
 
         {!starredQuery.isFetching
@@ -175,7 +185,7 @@ export function AppSidebar() {
               </Text>
             )
           : null}
-      </nav>
+      </Nav>
     </div>
   )
 }

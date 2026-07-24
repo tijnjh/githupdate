@@ -8,7 +8,7 @@ import {
   Title2,
 } from '@fluentui/react-components'
 import { ArrowLeft20Regular, ErrorCircle24Regular } from '@fluentui/react-icons'
-import { Link } from '@tanstack/react-router'
+import { useNavigate } from '@tanstack/react-router'
 import { getErrorMessage } from '../lib/errors'
 
 export function RoutePending() {
@@ -31,25 +31,31 @@ export function ErrorState({ error }: { error: unknown }) {
 }
 
 export function RouteError({ error }: { error: Error }) {
+  const navigate = useNavigate()
+
   return (
     <div className="center-state">
       <ErrorCircle24Regular className="state-icon" />
       <Title2>That request didn’t work</Title2>
       <Text>{getErrorMessage(error)}</Text>
-      <Link to="/" className="fluent-link-button">
-        <ArrowLeft20Regular />
+      <Button
+        icon={<ArrowLeft20Regular />}
+        onClick={() => void navigate({ to: '/' })}
+      >
         Back to latest releases
-      </Link>
+      </Button>
     </div>
   )
 }
 
 export function NotFoundPage() {
+  const navigate = useNavigate()
+
   return (
     <div className="center-state">
       <Title2>Page not found</Title2>
       <Text>The page you requested doesn’t exist.</Text>
-      <Button as="a" href="/" appearance="primary">
+      <Button appearance="primary" onClick={() => void navigate({ to: '/' })}>
         Go home
       </Button>
     </div>

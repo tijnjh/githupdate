@@ -3,6 +3,7 @@ import {
   Badge,
   Button,
   Card,
+  CardHeader,
   DrawerBody,
   DrawerFooter,
   DrawerHeader,
@@ -12,14 +13,11 @@ import {
   Tooltip,
 } from '@fluentui/react-components'
 import {
-  ArrowRight16Regular,
-  Calendar20Regular,
   Code20Regular,
   Dismiss24Regular,
   Open20Regular,
-  Person20Regular,
 } from '@fluentui/react-icons'
-import { Link } from '@tanstack/react-router'
+import { useNavigate } from '@tanstack/react-router'
 import { formatDistanceToNow } from 'date-fns'
 import DOMPurify from 'dompurify'
 import { marked } from 'marked'
@@ -43,7 +41,9 @@ function relativeDate(date: string): string {
 
 export function ReleaseCard({ release, meta, showAllReleasesLink = false }: ReleaseCardProps) {
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const navigate = useNavigate()
   const parsedTag = parseTag(release.tag)
+  const version = parsedTag?.version ?? release.tag
   const isPreview = parsedTag?.version.includes('-') || release.prerelease
   const releaseType = parsedTag?.releaseType
   const badgeColor = isPreview
@@ -60,52 +60,58 @@ export function ReleaseCard({ release, meta, showAllReleasesLink = false }: Rele
   }, [release.html, release.markdown])
 
   const githubUrl = `https://github.com/${encodeURIComponent(meta.owner)}/${encodeURIComponent(meta.name)}/releases/tag/${encodeURIComponent(release.tag)}`
+  const releaseDetails = [
+    release.name,
+    relativeDate(release.publishedAt),
+    release.author ? `by ${release.author}` : undefined,
+  ].filter(Boolean).join(' · ')
 
   const summary = (
-    <div className="release-summary">
-      <div className="release-repository">
-        <Text weight="semibold">{meta.owner}</Text>
-        <ArrowRight16Regular aria-hidden="true" />
-        <Text weight="semibold">{meta.name}</Text>
-      </div>
-
-      <div className="release-title-row">
-        <Badge color={badgeColor} appearance={isPreview ? 'tint' : 'filled'}>
-          {parsedTag?.version ?? release.tag}
+    <CardHeader
+      className="release-card-header"
+      image={<Code20Regular aria-hidden="true" />}
+      header={(
+        <Text weight="semibold" truncate wrap={false}>
+          {meta.owner}
+          /
+          {meta.name}
+        </Text>
+      )}
+      description={(
+        <Text size={200} truncate wrap={false}>
+          {releaseDetails}
+        </Text>
+      )}
+      action={(
+        <Badge
+          className="release-version-badge"
+          color={badgeColor}
+          appearance={isPreview ? 'tint' : 'filled'}
+          title={version}
+        >
+          <span className="release-version-label">{version}</span>
         </Badge>
-        {release.name
-          ? (
-              <Text className="release-name" weight="semibold">
-                {release.name}
-              </Text>
-            )
-          : null}
-      </div>
-
-      <div className="release-meta">
-        <span>
-          <Calendar20Regular aria-hidden="true" />
-          {relativeDate(release.publishedAt)}
-        </span>
-        {release.author
-          ? (
-              <span>
-                <Person20Regular aria-hidden="true" />
-                {release.author}
-              </span>
-            )
-          : null}
-      </div>
-    </div>
+      )}
+    />
   )
 
   return (
     <>
-      <button type="button" className="release-card-trigger" onClick={() => setDrawerOpen(true)}>
-        <Card className="release-card" appearance="filled-alternative">
-          {summary}
-        </Card>
-      </button>
+      <Card
+        appearance="filled-alternative"
+        size="small"
+        role="button"
+        aria-label={`View ${meta.owner}/${meta.name} ${release.tag} release notes`}
+        onClick={() => setDrawerOpen(true)}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault()
+            setDrawerOpen(true)
+          }
+        }}
+      >
+        {summary}
+      </Card>
 
       <OverlayDrawer
         className="release-drawer"
@@ -134,7 +140,9 @@ export function ReleaseCard({ release, meta, showAllReleasesLink = false }: Rele
         </DrawerHeader>
 
         <DrawerBody>
-          <div className="drawer-summary">{summary}</div>
+          <Card className="drawer-summary" appearance="outline" size="small">
+            {summary}
+          </Card>
           {/* eslint-disable-next-line react/dom-no-dangerously-set-innerhtml -- releaseBody is sanitized with DOMPurify. */}
           <div className="release-notes" dangerouslySetInnerHTML={{ __html: releaseBody }} />
         </DrawerBody>
@@ -153,15 +161,18 @@ export function ReleaseCard({ release, meta, showAllReleasesLink = false }: Rele
 
           {showAllReleasesLink
             ? (
-                <Link
-                  to="/$owner/$name"
-                  params={{ owner: meta.owner, name: meta.name }}
-                  className="fluent-link-button"
-                  onClick={() => setDrawerOpen(false)}
+                <Button
+                  icon={<Code20Regular />}
+                  onClick={() => {
+                    setDrawerOpen(false)
+                    void navigate({
+                      to: '/$owner/$name',
+                      params: { owner: meta.owner, name: meta.name },
+                    })
+                  }}
                 >
-                  <Code20Regular />
                   All releases
-                </Link>
+                </Button>
               )
             : null}
         </DrawerFooter>

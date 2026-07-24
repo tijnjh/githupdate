@@ -4,7 +4,7 @@ import {
   WeatherMoon24Regular,
   WeatherSunny24Regular,
 } from '@fluentui/react-icons'
-import { Outlet } from '@tanstack/react-router'
+import { Outlet, useRouterState } from '@tanstack/react-router'
 import { useAtom } from 'jotai'
 import { colorSchemeAtom, sidebarOpenAtom } from '../state/atoms'
 import { AppSidebar } from './AppSidebar'
@@ -12,6 +12,11 @@ import { AppSidebar } from './AppSidebar'
 export function AppShell() {
   const [colorScheme, setColorScheme] = useAtom(colorSchemeAtom)
   const [sidebarOpen, setSidebarOpen] = useAtom(sidebarOpenAtom)
+  const pathname = useRouterState({ select: state => state.location.pathname })
+  const pathSegments = pathname.split('/').filter(Boolean).map(decodeURIComponent)
+  const pageTitle = pathSegments.length >= 2
+    ? `${pathSegments[0]}/${pathSegments[1]}`
+    : 'Latest releases'
 
   return (
     <div className="app-shell">
@@ -39,11 +44,16 @@ export function AppShell() {
             />
           </Tooltip>
 
-          <div className="topbar-title">
-            <Text size={400} weight="semibold">
-              Releases
-            </Text>
-          </div>
+          <Text
+            as="h1"
+            className="topbar-title"
+            size={400}
+            weight="semibold"
+            truncate
+            wrap={false}
+          >
+            {pageTitle}
+          </Text>
 
           <Tooltip
             content={`Use ${colorScheme === 'dark' ? 'light' : 'dark'} theme`}
