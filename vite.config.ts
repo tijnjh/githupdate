@@ -1,7 +1,20 @@
-import tailwindcss from '@tailwindcss/vite';
-import { sveltekit } from '@sveltejs/kit/vite';
-import { defineConfig } from 'vite';
+import babel from '@rolldown/plugin-babel'
+import { tanstackRouter } from '@tanstack/router-plugin/vite'
+import react, { reactCompilerPreset } from '@vitejs/plugin-react'
+import { defineConfig } from 'vite'
 
 export default defineConfig({
-	plugins: [tailwindcss(), sveltekit()]
-});
+  plugins: [
+    tanstackRouter({
+      target: 'react',
+      autoCodeSplitting: true,
+    }),
+    react(),
+    babel({
+      presets: [reactCompilerPreset()],
+    }),
+  ],
+  build: {
+    target: 'es2022',
+  },
+})

@@ -1,19 +1,23 @@
 {
-	"extends": "./.svelte-kit/tsconfig.json",
-	"compilerOptions": {
-		"allowJs": true,
-		"checkJs": true,
-		"esModuleInterop": true,
-		"forceConsistentCasingInFileNames": true,
-		"resolveJsonModule": true,
-		"skipLibCheck": true,
-		"sourceMap": true,
-		"strict": true,
-		"moduleResolution": "bundler"
-	}
-	// Path aliases are handled by https://svelte.dev/docs/kit/configuration#alias
-	// except $lib which is handled by https://svelte.dev/docs/kit/configuration#files
-	//
-	// To make changes to top-level options such as include and exclude, we recommend extending
-	// the generated config; see https://svelte.dev/docs/kit/configuration#typescript
+  "compilerOptions": {
+    "target": "ES2022",
+    "jsx": "react-jsx",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "useDefineForClassFields": true,
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "resolveJsonModule": true,
+    "types": ["vite/client"],
+    "allowJs": false,
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noEmit": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "skipLibCheck": true
+  },
+  "include": ["src", "vite.config.ts"]
 }
