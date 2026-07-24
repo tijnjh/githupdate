@@ -18,16 +18,16 @@ There is no server runtime or full-stack framework. The production build is a st
 ## Development
 
 ```sh
-bun install
-bun run dev
+pnpm install
+pnpm dev
 ```
 
 ## Validation and production build
 
 ```sh
-bun run check
-bun run lint
-bun run build
+pnpm check
+pnpm lint
+pnpm build
 ```
 
 When deploying, configure the static host to serve `index.html` as the fallback for application
