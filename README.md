@@ -1,38 +1,34 @@
-# sv
+# githupdate
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+githupdate is a client-only React application that builds a release feed from the public
+repositories starred by a GitHub user.
 
-## Creating a project
+## Stack
 
-If you're seeing this, you've probably already done this step. Congrats!
+- React and Vite
+- TanStack Router for client-side routing
+- TanStack Query for GitHub and ungh data fetching
+- Jotai for persisted user, repository, and theme state
+- Microsoft Fluent UI for the interface
+- Valibot for API response validation
 
-```sh
-# create a new project in the current directory
-npx sv create
+There is no server runtime or full-stack framework. The production build is a static SPA in
+`dist/`.
 
-# create a new project in my-app
-npx sv create my-app
-```
-
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```sh
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
-
-## Building
-
-To create a production version of your app:
+## Development
 
 ```sh
-npm run build
+pnpm install
+pnpm dev
 ```
 
-You can preview the production build with `npm run preview`.
+## Validation and production build
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+```sh
+pnpm check
+pnpm lint
+pnpm build
+```
+
+When deploying, configure the static host to serve `index.html` as the fallback for application
+routes such as `/owner/repository`.
