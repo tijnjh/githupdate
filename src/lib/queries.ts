@@ -1,6 +1,6 @@
 import type { Repo } from '../types'
 import { queryOptions } from '@tanstack/react-query'
-import { fetchLatestRelease, fetchReleases, fetchStarredRepos } from './api'
+import { fetchLatestRelease, fetchOwnerRepos, fetchReleases, fetchStarredRepos } from './api'
 
 export const queryKeys = {
   releases: (owner: string, name: string) => ['releases', owner, name] as const,
@@ -20,6 +20,13 @@ export function releasesQuery(owner: string, name: string) {
   return queryOptions({
     queryKey: queryKeys.releases(owner, name),
     queryFn: ({ signal }) => fetchReleases(owner, name, signal),
+  })
+}
+
+export function ownerReposQuery(owner: string) {
+  return queryOptions({
+    queryKey: ['owner-repositories', owner],
+    queryFn: ({ signal }) => fetchOwnerRepos(owner, signal),
   })
 }
 

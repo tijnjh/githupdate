@@ -93,6 +93,28 @@ function unghUrl(owner: string, name: string, suffix: string): string {
   return `https://ungh.cc/repos/${encodeURIComponent(owner)}/${encodeURIComponent(name)}/${suffix}`
 }
 
+export async function fetchOwnerRepos(owner: string, signal?: AbortSignal): Promise<Repo[]> {
+  const account = await requestJson(
+    `https://api.github.com/users/${encodeURIComponent(owner)}`,
+    v.object({ type: v.string() }),
+    signal,
+  )
+  const accountPath = account.type === 'Organization' ? 'orgs' : 'users'
+  const repositories: Repo[] = []
+  for (let page = 1; ; page += 1) {
+    const url = new URL(`https://api.github.com/${accountPath}/${encodeURIComponent(owner)}/repos`)
+    url.searchParams.set('per_page', '100')
+    url.searchParams.set('page', String(page))
+    url.searchParams.set('sort', 'full_name')
+    url.searchParams.set('direction', 'asc')
+    const result = await requestJson(url.toString(), githubReposSchema, signal)
+    repositories.push(...result.map(repo => ({ owner: repo.owner.login, name: repo.name })))
+    if (result.length < 100) {
+      return repositories
+    }
+  }
+}
+
 export async function fetchLatestRelease(
   repo: Repo,
   signal?: AbortSignal,

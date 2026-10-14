@@ -14,9 +14,11 @@ export function AppShell() {
   const [sidebarOpen, setSidebarOpen] = useAtom(sidebarOpenAtom)
   const pathname = useRouterState({ select: state => state.location.pathname })
   const pathSegments = pathname.split('/').filter(Boolean).map(decodeURIComponent)
-  const pageTitle = pathSegments.length >= 2
-    ? `${pathSegments[0]}/${pathSegments[1]}`
-    : 'Latest releases'
+  const pageTitle = pathname.includes(',')
+    ? 'Repository releases'
+    : pathSegments.length >= 2
+      ? `${pathSegments[0]}/${pathSegments[1]}`
+      : pathSegments[0] ? `${pathSegments[0]} releases` : 'Latest releases'
 
   return (
     <div className="app-shell">
